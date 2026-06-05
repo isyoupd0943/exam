@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS YOU · 학교별 시험 분석 리포트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue-1:#dbeafe; --blue-2:#bfdbfe; --blue-3:#93c5fd; --blue-4:#4C8BF5;
+  --blue-ink:#2563eb; --blue-deep:#1d4ed8;
+  --sky-fill:#cfe3fb;
+  --donut-blue-d:#5b8ec9; --donut-blue-l:#9db2d5;
+  --donut-purple-d:#8b7cb8; --donut-purple-m:#c7badd; --donut-purple-l:#e1d8eb;
+  --donut-green-d:#7cb083; --donut-green-m:#a9cfa6; --donut-green-l:#dcefda;
+  --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+  --bar-37:#4285F4; --bar-38:#EA4335; --bar-39:#FBBC04; --bar-40:#34A853;
+  --bar-41:#FF6D00; --bar-6:#46BDC6; --bar-7:#4C8BF5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--ink);background:#eef4fc;line-height:1.6}
+.wrap{max-width:920px;margin:0 auto;padding:24px 16px 80px}
+
+/* ── 상단 진행 단계 ── */
+.stepbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;font-size:12px}
+.stepbar .s{padding:5px 11px;border-radius:999px;background:#fff;color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.stepbar .s.on{background:var(--blue-ink);color:#fff;border-color:var(--blue-ink);font-weight:700}
+.stepbar .s.done{background:var(--blue-1);color:var(--blue-deep);border-color:var(--blue-2)}
+
+/* ── 카드/폼 공통 ── */
+.card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(37,99,235,.06);margin-bottom:18px}
+.card h2{font-size:21px;margin-bottom:6px}
+.card .sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+label{display:block;font-weight:700;font-size:14px;margin:16px 0 6px}
+input[type=text],input[type=tel],textarea,select{
+  width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;
+  font-family:inherit;font-size:14px;transition:.15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--blue-4);box-shadow:0 0 0 3px rgba(76,139,245,.15)}
+textarea{resize:vertical;min-height:96px}
+.hint{color:var(--muted);font-size:12.5px;margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:7px;justify-content:center;
+  padding:12px 22px;border:none;border-radius:10px;font-family:inherit;font-size:15px;
+  font-weight:700;cursor:pointer;transition:.15s}
+.btn.primary{background:var(--blue-ink);color:#fff}
+.btn.primary:hover{background:var(--blue-deep)}
+.btn.ghost{background:#fff;color:var(--blue-ink);border:1.5px solid var(--blue-2)}
+.btn.ghost:hover{background:var(--blue-1)}
+.btn.lg{width:100%;padding:15px;font-size:16px}
+.btn-row{display:flex;gap:10px;margin-top:24px}
+.btn-row .btn{flex:1}
+
+/* ── 과목 선택 ── */
+.level-block{margin-bottom:18px}
+.level-block h3{font-size:16px;color:var(--blue-deep);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px}
+.level-block h3::before{content:"";width:4px;height:18px;background:var(--blue-4);border-radius:2px}
+.subj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.subj-btn{padding:26px 10px;border:1.5px solid var(--blue-2);border-radius:14px;background:#fff;
+  font-size:17px;font-weight:700;color:var(--blue-deep);cursor:pointer;transition:.15s}
+.subj-btn:hover{background:var(--blue-ink);color:#fff;transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(37,99,235,.22)}
+
+/* ── 데이터 표(난이도 수정) ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+.data-table th{background:#f3f4f6;padding:9px 8px;border:1px solid var(--line);font-size:12.5px}
+.data-table td{border:1px solid var(--line);padding:0}
+.data-table td input,.data-table td select{border:none;border-radius:0;padding:9px 8px;text-align:center;background:transparent}
+.data-table td input:focus,.data-table td select:focus{box-shadow:inset 0 0 0 2px var(--blue-4)}
+.addrow{margin-top:10px;font-size:13px;color:var(--blue-ink);background:none;border:1px dashed var(--blue-3);
+  padding:8px 14px;border-radius:8px;cursor:pointer}
+
+/* ── 난이도 비교 격자(섹션1 입력) ── */
+.cmp-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
+.cmp-table th{background:#f3f4f6;border:1px solid var(--line);padding:8px 4px;font-size:11.5px;text-align:center}
+.cmp-table td{border:1px solid var(--line);padding:4px;text-align:center}
+.cmp-table .schoolname input{text-align:center;font-weight:700;padding:6px;font-size:12.5px}
+.cmp-table input[type=checkbox]{width:18px;height:18px;accent-color:var(--blue-4);cursor:pointer}
+.cmp-grad td.schoolname{color:#1e3a5f}
+
+/* ── 리포트(페이지 단위) ── */
+.report-toolbar{position:sticky;top:0;z-index:20;background:#eef4fc;padding:12px 0;
+  display:flex;gap:10px;justify-content:flex-end;margin-bottom:10px}
+.page{background:#fff;width:794px;min-height:1123px;margin:0 auto 22px;padding:54px 60px;
+  box-shadow:0 6px 28px rgba(0,0,0,.10);position:relative;page-break-after:always}
+.page-num{position:absolute;bottom:24px;left:0;right:0;text-align:center;color:#9ca3af;font-size:12px}
+.rep-head{border-bottom:2px solid var(--blue-2);padding-bottom:10px;margin-bottom:26px}
+.rep-head h1{font-size:25px;color:#1e293b;letter-spacing:-.5px}
+.rep-head .meta{color:var(--muted);font-size:13.5px;margin-top:3px}
+.sec-title{font-size:20px;margin:6px 0 16px;color:#1e293b}
+.body-text{font-size:14px;line-height:1.95;color:#374151;white-space:pre-wrap}
+
+/* 표지 */
+.cover{background:linear-gradient(165deg,#eaf2fe 0%,#dbeafe 60%,#cfe3fb 100%);
+  display:flex;flex-direction:column;overflow:hidden}
+.cover-card{background:rgba(255,255,255,.78);border-radius:22px;margin:54px 48px 0;padding:40px 44px;
+  position:relative;box-shadow:0 14px 40px rgba(37,99,235,.13);max-width:560px}
+.cover-tag{display:inline-block;background:var(--blue-3);color:#fff;font-size:14px;font-weight:700;
+  padding:5px 16px;border-radius:8px 8px 8px 0;margin-bottom:14px}
+.cover-card h1{font-family:'Black Han Sans',sans-serif;font-size:62px;line-height:1.08;
+  color:var(--blue-ink);letter-spacing:1px}
+.cover-pill{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--blue-3);
+  border-radius:999px;padding:9px 20px;color:var(--blue-deep);font-weight:700;font-size:17px;margin-top:18px}
+.cover-pill .arr{width:26px;height:26px;border-radius:50%;background:var(--blue-ink);color:#fff;
+  display:grid;place-items:center;font-size:14px}
+.cover-desc{color:var(--blue-deep);font-weight:500;font-size:15px;margin-top:18px;line-height:1.7}
+.cover-meta{display:flex;gap:44px;justify-content:center;margin:54px 0 0;color:#334155;font-weight:700;font-size:15px;flex-wrap:wrap}
+.skyline{margin-top:auto;height:200px;width:100%}
+.cover-logo-box{text-align:center;margin-top:30px}
+.logo-ph{display:inline-flex;flex-direction:column;align-items:center;gap:4px;color:#1e293b}
+.logo-ph .mark{width:72px;height:72px;border:2px dashed #94a3b8;border-radius:12px;
+  display:grid;place-items:center;color:#94a3b8;font-size:11px;text-align:center;line-height:1.2}
+
+/* 마지막 표지 */
+.backcover{background:linear-gradient(180deg,#fff 0%,#fff 55%,#eaf3ff 100%);
+  display:flex;flex-direction:column;overflow:hidden}
+.backcover .bc-top h2{font-size:15px;font-weight:700;color:#334155}
+.backcover .bc-top h1{font-family:'Black Han Sans',sans-serif;font-size:40px;color:#334155;margin-top:4px}
+.backcover .bc-center{margin:auto;text-align:center}
+.backcover .tel{font-weight:700;font-size:19px;color:#1e293b;margin-top:22px}
+
+/* 표(난이도 비교 출력) */
+.rep-cmp{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.rep-cmp th{background:#f3f4f6;border:1px solid #d1d5db;padding:9px 4px;font-size:11px;text-align:center;font-weight:700}
+.rep-cmp td{border:1px solid #d1d5db;padding:7px 4px;text-align:center;height:30px}
+.rep-cmp td.sn{font-weight:700;color:#1e3a5f}
+.rep-note{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+/* 문항 상세 표 */
+.rep-detail{width:100%;border-collapse:collapse;font-size:12.5px}
+.rep-detail th{background:#f3f4f6;border:1px solid #d1d5db;padding:8px;font-weight:700}
+.rep-detail td{border:1px solid #d1d5db;padding:7px 8px;text-align:center}
+
+/* 교차표 */
+.rep-cross{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px}
+.rep-cross th{background:#f3f4f6;border:1px solid #d1d5db;padding:9px;font-weight:700}
+.rep-cross td{border:1px solid #d1d5db;padding:8px;text-align:center}
+.rep-cross tr:last-child td,.rep-cross td.tot{background:#eef0f3;font-weight:700}
+
+/* 차트 2단 */
+.chart-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:8px 0 26px}
+.chart-box{border:1px solid var(--line);border-radius:12px;padding:14px}
+.chart-box h4{text-align:center;font-size:14px;margin-bottom:6px}
+.chart-1{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.chart-1 h4{text-align:center;font-size:15px;margin-bottom:8px}
+
+/* 배점 구간 기준 박스 */
+.score-band{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start;margin-bottom:8px}
+.band-info h4{font-size:15px;margin-bottom:10px;padding-left:8px;border-left:3px solid var(--blue-4)}
+.band-info p{font-size:13px;color:#374151;margin-bottom:10px;line-height:1.7}
+.band-info .li{font-size:13.5px;margin:3px 0}
+
+.notice{background:#fef9e7;border:1px solid #f7e9a0;border-radius:10px;padding:12px 16px;
+  font-size:13px;color:#7a6320;margin-top:14px}
+.access-screen{max-width:460px;margin:80px auto;text-align:center}
+.access-screen .lock{font-size:46px;margin-bottom:10px}
+.spinner{width:46px;height:46px;border:4px solid var(--blue-1);border-top-color:var(--blue-ink);
+  border-radius:50%;animation:spin 1s linear infinite;margin:30px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;
+  padding:13px 22px;border-radius:10px;font-size:14px;opacity:0;transition:.3s;z-index:99}
+.toast.show{opacity:1}
+.dev-note{background:#1e293b;color:#cbd5e1;border-radius:10px;padding:10px 16px;font-size:12px;margin-bottom:16px;line-height:1.6}
+.dev-note b{color:#7dd3fc}
+@media print{
+  body{background:#fff}
+  .wrap{padding:0;max-width:none}
+  .stepbar,.report-toolbar,.dev-note{display:none!important}
+  .page{box-shadow:none;margin:0;width:auto;min-height:100vh}
+}
+@media(max-width:840px){
+  .page{width:100%;padding:30px 22px}
+  .subj-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-2col,.score-band{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   IS YOU 학교별 시험 분석 — 웹 (B: Apps Script 백엔드 연동)
+   ※ 모든 Gemini 호출·시트 입출력은 Apps Script(API_URL)로 중계.
+     웹은 Gemini 키·시트 권한을 직접 들지 않는다.
+   ※ 아래 API_URL 을 배포된 웹앱 URL로 바꾸면 실제 동작한다.
+     URL이 비어 있으면 자동으로 데모(목업) 모드로 동작한다.
+   ============================================================ */
+
+// ★★★ 배포 후 여기에 Apps Script 웹앱 URL 붙여넣기 ★★★
+const API_URL = "https://script.google.com/macros/s/AKfycbxW00deCfypCsAC4KHggLbyozAA_W7PKy58zawD46BXgRVBMjpf_-xnj4HR5f2JRbS8OA/exec";   // 예: "https://script.google.com/macros/s/XXXX/exec"
+const DEMO = !API_URL; // URL 없으면 데모 모드
+
+// 백엔드 호출 헬퍼
+async function apiGet(params){
+  if(DEMO) return demoGet(params);
+  const qs = new URLSearchParams(params).toString();
+  const r = await fetch(API_URL+"?"+qs);
+  return r.json();
+}
+async function apiPost(body){
+  if(DEMO) return demoPost(body);
+  const r = await fetch(API_URL,{method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"}, // Apps Script 단순요청(CORS 우회)
+    body:JSON.stringify(body)});
+  return r.json();
+}
+
+// ---------- 전역 상태 ----------
+const STATE = {
+  sheetId:null, userId:null, access:false, readonly:false,
+  academy:null,            // 학원 설정(브라우저 보관) — 문제집명(books)도 여기 포함
+  level:null, subject:null,// 과목 선택
+  info:{},                 // 학교/학년/세부과목/단원/대표문항 (시험명 제거)
+  compare:null,            // 섹션1 난이도 비교 격자
+  fileBase64:null, fileMime:null, fileName:null,
+  rows:[],                 // 문항 데이터 [{no,score,type,diff,unit}]
+  sections:{},             // gemini 텍스트 {s2,s3,s5}
+  groupKey:null,           // [학교+학년+과목] — 이력 묶음 키
+  reportId:null            // 고유 ID(그룹키_생성시각) — 개별 리포트
+};
+
+// 과목별 기준(현재 전부 과학 기준 — 개발자가 교체)  ★PROMPT★
+const SUBJECTS = ["국어","수학","영어","과학"];
+const DETAIL_HINT = {
+  "중등":{국어:"예: 중1 국어",수학:"예: 중2-1, 중3-2",영어:"예: 중2 영어",과학:"예: 중2 과학"},
+  "고등":{국어:"예: 공통국어1, 문학",수학:"예: 공통수학1, 대수",영어:"예: 공통영어1, 영어Ⅰ",과학:"예: 통합과학, 물리학Ⅰ"}
+};
+const UNITS_HINT = {
+  "중등":{국어:"예: 시의 표현, 문법-품사",수학:"예: 일차함수, 도형의 성질",영어:"예: 현재완료, 주제 찾기",과학:"예: 상태 변화, 광합성"},
+  "고등":{국어:"예: 현대시, 고전소설",수학:"예: 다항식, 함수, 수열",영어:"예: 어법, 빈칸 추론",과학:"예: 역학과 에너지, 화학 평형"}
+};
+
+// ---------- 유틸 ----------
+const $=s=>document.querySelector(s);
+const app=$("#app");
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+// ====== 학원 설정은 브라우저(localStorage)에 보관 ======
+function loadAcademy(){ return JSON.parse(localStorage.getItem("isyou_academy_"+STATE.sheetId)||"null"); }
+function saveAcademy(a){ localStorage.setItem("isyou_academy_"+STATE.sheetId, JSON.stringify(a)); }
+
+// ====== 데모 모드 (API_URL 비었을 때만) ======
+const DEMO_WL=["DEMO-SHEET-001","DEMO-SHEET-002"];
+function _demoRecs(){ return JSON.parse(localStorage.getItem("isyou_reports_"+STATE.sheetId)||"[]"); }
+function _demoSave(arr){ localStorage.setItem("isyou_reports_"+STATE.sheetId,JSON.stringify(arr)); }
+function demoGet(p){
+  if(p.action==="access") return Promise.resolve(DEMO_WL.includes(p.sheetId)?{ok:true,userId:"demo-user"}:{ok:false,error:"not whitelisted"});
+  // 학년+과목이 같은 가장 최근 리포트의 비교표(학교+난이도) 반환
+  if(p.action==="lastcompare"){
+    const recs=_demoRecs().filter(r=>r.grade===p.grade && r.subject===p.subject);
+    const last=recs.length?recs[recs.length-1]:null;
+    return Promise.resolve({ok:true, compare:last?last.data.compare:null});
+  }
+  // 그룹([학교+학년+과목])의 리포트 이력 목록
+  if(p.action==="list"){
+    const recs=_demoRecs().filter(r=>r.groupKey===p.groupKey)
+      .map(r=>({id:r.id, createdAt:r.createdAt})).reverse();
+    return Promise.resolve({ok:true, reports:recs});
+  }
+  // 단건 조회(id 기준) — 일반 열람 + 보기전용 공유
+  if(p.action==="report"||p.action==="get"){
+    const rec=_demoRecs().find(x=>x.id===p.id);
+    if(!rec) return Promise.resolve({ok:p.action==="get",found:false});
+    const out={id:rec.id,groupKey:rec.groupKey,school:rec.school,grade:rec.grade,subject:rec.subject,
+      detail:rec.detail,units:rec.units,target:rec.target,s2:rec.s2,s3:rec.s3,s5:rec.s5,
+      createdAt:rec.createdAt,data:rec.data};
+    return Promise.resolve(p.action==="report"?{ok:true,record:out,readonly:true}:{ok:true,found:true,record:out});
+  }
+  return Promise.resolve({ok:false});
+}
+function demoPost(b){
+  if(b.action==="analyze") return Promise.resolve({ok:true,raw:JSON.stringify(DEMO_ROWS)});
+  if(b.action==="sections")return Promise.resolve({ok:true,text:JSON.stringify(demoSections())});
+  if(b.action==="save"){ // 덮어쓰지 않고 이력 누적
+    const arr=_demoRecs();
+    arr.push({id:b.id, groupKey:b.groupKey, school:b.school, grade:b.grade, subject:b.subject,
+      detail:b.detail, units:b.units, target:b.target,
+      data:b.data, s2:b.s2, s3:b.s3, s5:b.s5, createdAt:new Date().toISOString()});
+    _demoSave(arr); return Promise.resolve({ok:true,id:b.id});
+  }
+  return Promise.resolve({ok:false});
+}
+const DEMO_ROWS=[
+  {no:"1",score:"3.7",type:"개념형",diff:"하",unit:"집합"},{no:"2",score:"3.8",type:"개념형",diff:"하",unit:"집합"},
+  {no:"3",score:"3.8",type:"개념형",diff:"하",unit:"집합"},{no:"4",score:"4",type:"계산형",diff:"중",unit:"집합"},
+  {no:"5",score:"3.8",type:"개념형",diff:"하",unit:"집합"},{no:"6",score:"3.9",type:"계산형",diff:"중",unit:"집합"},
+  {no:"7",score:"3.8",type:"개념형",diff:"하",unit:"명제"},{no:"8",score:"3.9",type:"개념형",diff:"하",unit:"명제"},
+  {no:"9",score:"3.9",type:"해석·추론형",diff:"중",unit:"명제"},{no:"10",score:"3.9",type:"개념형",diff:"하",unit:"도형의 방정식"},
+  {no:"11",score:"3.8",type:"계산형",diff:"하",unit:"도형의 방정식"},{no:"12",score:"4",type:"계산형",diff:"중",unit:"도형의 방정식"},
+  {no:"13",score:"3.9",type:"계산형",diff:"하",unit:"도형의 방정식"},{no:"14",score:"3.9",type:"해석·추론형",diff:"하",unit:"도형의 방정식"},
+  {no:"15",score:"4.1",type:"복합형",diff:"상",unit:"도형의 방정식"},{no:"16",score:"3.9",type:"계산형",diff:"하",unit:"도형의 방정식"},
+  {no:"17",score:"3.9",type:"해석·추론형",diff:"중",unit:"도형의 방정식"},{no:"서답형1",score:"7",type:"복합형",diff:"중",unit:"도형의 방정식"},
+  {no:"서답형2",score:"6",type:"계산형",diff:"하",unit:"도형의 방정식"},{no:"서답형3",score:"7",type:"개념형",diff:"하",unit:"집합"},
+  {no:"서답형4",score:"7",type:"복합형",diff:"중",unit:"집합"},{no:"서답형5",score:"7",type:"복합형",diff:"상",unit:"명제"}
+];
+function demoSections(){return {
+  s2:`이번 ${STATE.info.school} ${STATE.info.grade} ${STATE.subject} 시험은 집합·명제·도형의 방정식 단원에서 출제되었고, 선택형 17문항, 서답형 5문항으로 총 22문항이었습니다.\n\n문항 배점은 선택형 3.7~4.1점대, 서답형은 6~7점으로 차등 배분되어 총점 100점입니다. 난이도 분포를 보면 1~3번이 하 수준으로 출발하여 4~6번에서 중 난이도로 상승하고, 이후 다시 하 수준으로 조정되며 후반 서답형에서 변별이 형성됩니다.\n\n다음 시험 대비 핵심은 (1) 선택형 기본 문제에서 빠르게 점수를 확보하도록 기초 개념을 반복 훈련할 것 (2) 도형의 방정식 단원에서 좌표·조건 정리·계산 실수를 줄일 것 (3) 서답형은 단계별 풀이 구조를 습관화하여 논리적이고 채점 친화적인 답안을 완성할 것입니다.`,
+  s3:`15번 문항 (4.1점, 상)\n핵심 쟁점: 도형의 방정식 단원에서 항등식과 직선의 관계를 해석하여 부호 조건으로 범위를 구해야 합니다. 주의 함정: 항등식 이용 실수, 부호 실수.\n\n서답형5 (7점, 상)\n핵심 쟁점: 명제의 부정을 구하고 참이 되도록 하는 값을 서술형으로 정리하는 고난도 문제로 논리 전개력이 요구됩니다. 주의 함정: 서술형 채점 기준 미충족.\n\n이 문항들은 변별력을 형성하는 대표 문제로, 계산 정확성·조건 판별력·논리적 서술력을 동시에 평가하여 상위권과 중위권을 가르는 핵심 포인트로 작용했을 가능성이 큽니다.`,
+  s5:`이번 시험은 집합, 명제, 도형의 방정식 세 단원에서 고르게 출제되되 도형의 방정식 단원의 비중이 가장 높았습니다.\n\n도형의 방정식 단원은 선택형과 서답형 전반에 배치되어 계산형·해석추론형·복합형이 모두 나타났고, 특히 변별 문항이 이 단원에 집중되었습니다. 집합 단원은 초반 개념형과 서답형 일부로 안정적 득점 구간을 형성했으며, 명제 단원은 개념형과 고난도 서답형으로 양극화되었습니다.\n\n따라서 도형의 방정식 단원을 중심에 두고 계산 정확도와 서술 전개를 집중 훈련하되, 집합·명제 단원의 기본 개념을 빠짐없이 정리하는 학습 전략이 효과적입니다.`
+};}
+
+// ====== 실제 Gemini 프롬프트 빌더 (백엔드로 전달) ======
+function buildAnalyzePrompt(){
+  return `[역할] 학교 시험 문항 분석 전문가. 업로드된 시험지만 근거로 분석하라.
+[과목] ${STATE.level} ${STATE.subject}
+[학교] ${STATE.info.school} / [학년] ${STATE.info.grade} / [세부과목] ${STATE.info.subject}
+[단원 리스트] ${STATE.info.units}
+[작업] 시험지의 모든 문항을 원본 인쇄 순서대로 추출하여 아래 JSON 배열로만 출력.
+설명·코드블록 없이 순수 JSON만. 각 원소는
+{"no":"문항번호","score":배점숫자,"type":"개념형|계산형|해석·추론형|탐구·실험형|복합형","diff":"하|중|상","unit":"출제단원"}
+배점 합이 100이 되도록 내부 검토. 단원은 입력 단원명과 정확히 일치시킬 것.`;
+}
+function buildSectionsPrompt(){
+  return `[역할] 학교 시험 분석 전문가. 아래 확정 문항 데이터만 근거로 분석.
+[학교] ${STATE.info.school} ${STATE.info.grade} ${STATE.subject}
+[확정 문항 데이터(JSON)] ${JSON.stringify(STATE.rows)}
+[작업] 아래 3개 섹션 텍스트를 JSON으로만 출력(코드블록 금지):
+{"s2":"총평 및 학습전략 (쉬운 구어체, 2000자 이내, 학교명·학년 포함, 문단은 빈 줄로 구분)",
+ "s3":"대표문항 ${STATE.info.target} 상세 분석 (출제의도·핵심개념·함정)",
+ "s5":"출제 단원 분석 (단원별 비중·교차분포, 거시적 분석, 문항번호 언급 금지)"}`;
+}
+
+// =========================================================
+//  렌더 라우터
+// =========================================================
+function render(){
+  if(!STATE.access)      return renderAccess();
+  if(!STATE.academy)     return renderAcademySetup();
+  if(!STATE.subject)     return renderSubjectPick();
+  if(STATE.view==="input")  return renderReportInput();
+  if(STATE.view==="exists") return renderExists();
+  if(STATE.view==="list")   return renderHistoryList();
+  if(STATE.view==="raw")    return renderRawEdit();
+  if(STATE.view==="report") return renderReport();
+  return renderSubjectPick();
+}
+function stepbar(active){
+  const steps=["학원 설정","과목 선택","리포트 입력","난이도 검토","최종 리포트"];
+  return `<div class="stepbar">${steps.map((s,i)=>{
+    let cls=i<active?"s done":i===active?"s on":"s";
+    return `<span class="${cls}">${i+1}. ${s}</span>`;}).join("")}</div>`;
+}
+
+// ---------- 0. 접근 제어 ----------
+function renderAccess(){
+  app.innerHTML=`<div class="card access-screen">
+    <div class="lock">🔒</div>
+    <h2>학교별 시험 분석 리포트</h2>
+    <p class="sub">접속 URL에 부여된 스프레드시트 ID로 접근 권한을 확인합니다.</p>
+    <div class="dev-note">개발 메모 — 실제 서비스에서는 <b>URL 파라미터</b>의 시트 ID를 자동으로 읽어
+      <b>관리용 화이트리스트 시트</b>와 대조합니다. 데모에서는 직접 입력하세요.
+      (등록된 데모 ID: <b>DEMO-SHEET-001</b>)</div>
+    <label style="text-align:left">스프레드시트 ID</label>
+    <input type="text" id="sid" placeholder="DEMO-SHEET-001" value="DEMO-SHEET-001">
+    <button class="btn primary lg" style="margin-top:18px" onclick="submitAccess()">접속하기</button>
+  </div>`;
+}
+async function submitAccess(){
+  const id=$("#sid").value.trim();
+  if(!id) return toast("스프레드시트 ID를 입력하세요.");
+  toast("접근 권한 확인 중…");
+  const res=await apiGet({action:"access",sheetId:id});
+  if(!res.ok){ return toast("⛔ 화이트리스트에 등록되지 않은 ID입니다."); }
+  STATE.sheetId=id; STATE.userId=res.userId; STATE.access=true;
+  STATE.academy=loadAcademy();
+  render();
+}
+
+// ---------- 1. 학원 설정 ----------
+function renderAcademySetup(){
+  const a=STATE.academy||{};
+  const t=a.titles||{};
+  app.innerHTML=stepbar(0)+`<div class="card">
+    <h2>학원 설정</h2>
+    <p class="sub">한 번만 세팅하면 모든 리포트의 표지·마지막장·목차에 공통 적용됩니다.</p>
+
+    <label>학원명</label>
+    <input type="text" id="ac_name" value="${esc(a.name||'디자인오브수학 IS YOU')}">
+    <label>상담 전화번호</label>
+    <input type="tel" id="ac_tel" value="${esc(a.tel||'053) 636-0943')}">
+
+    <label>학원 로고</label>
+    <div class="dev-note">개발 메모 — 원장이 직접 로고 이미지를 업로드합니다. 표지·마지막장에 삽입되며,
+      미업로드 시 자리표시(placeholder)가 보입니다. (지금은 자리만 비워둠)</div>
+    <input type="text" id="ac_logo" placeholder="로고 파일 업로드 자리 (개발 시 file input으로 교체)" disabled>
+
+    <label style="margin-top:22px">리포트 목차 제목 커스터마이징</label>
+    <p class="hint">원장이 각 섹션 제목을 자유롭게 바꿀 수 있습니다.</p>
+    <div style="display:grid;gap:8px;margin-top:8px">
+      ${[["s1","1. 학교 시험 난이도 비교 분석"],["s2","2. 총평 및 학습전략"],
+         ["s3","3. 문항별 상세 분석"],["s4","4. 문제 유형별 출제 현황 분석"],
+         ["s5","5. 출제 단원 분석"]].map(([k,d])=>
+        `<input type="text" id="tt_${k}" value="${esc(t[k]||d)}">`).join("")}
+    </div>
+
+    <label style="margin-top:22px">배점 구간 기준</label>
+    <p class="hint">저·중·고배점의 경계 점수를 설정합니다. (난이도와 별개로 점수 배점 비중 분석에 사용)</p>
+    <div style="display:flex;gap:12px;margin-top:8px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:13px">저배점: </span>
+      <input type="text" id="band_lo" value="${esc((a.band&&a.band.lo)||'4')}" style="width:80px">
+      <span style="font-size:13px">점 이하 &nbsp;/&nbsp; 고배점: </span>
+      <input type="text" id="band_hi" value="${esc((a.band&&a.band.hi)||'6.1')}" style="width:80px">
+      <span style="font-size:13px">점 이상 (그 사이는 중배점)</span>
+    </div>
+
+    <label style="margin-top:22px">시중교재 난이도 (문제집명 6개)</label>
+    <p class="hint">섹션1 난이도 비교표 머리글에 들어갑니다. 난이도 낮은 순(하→최상)으로 입력하세요.</p>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px">
+      ${(a.books||["하","중하","중","중상","상","최상"]).map((b,i)=>
+        `<input type="text" id="bk_${i}" value="${esc(b)}" style="text-align:center;font-size:12px">`).join("")}
+    </div>
+
+    <button class="btn primary lg" style="margin-top:26px" onclick="saveAcademySetup()">설정 저장하고 시작하기</button>
+  </div>`;
+}
+function saveAcademySetup(){
+  const books=[]; for(let i=0;i<6;i++){ books.push(($("#bk_"+i).value.trim())||("문제집"+(i+1))); }
+  STATE.academy={
+    name:$("#ac_name").value.trim(),
+    tel:$("#ac_tel").value.trim(),
+    logo:null, books:books,
+    titles:{s1:$("#tt_s1").value,s2:$("#tt_s2").value,s3:$("#tt_s3").value,s4:$("#tt_s4").value,s5:$("#tt_s5").value},
+    band:{lo:parseFloat($("#band_lo").value)||4, hi:parseFloat($("#band_hi").value)||6.1}
+  };
+  saveAcademy(STATE.academy);
+  toast("학원 설정이 저장되었습니다.");
+  render();
+}
+
+// ---------- 2. 과목 선택 ----------
+function renderSubjectPick(){
+  app.innerHTML=stepbar(1)+`<div class="card">
+    <h2>분석할 과목을 선택하세요</h2>
+    <p class="sub">선택 즉시 리포트 입력 단계로 진입합니다.</p>
+    ${["중등","고등"].map(lv=>`
+      <div class="level-block">
+        <h3>${lv}</h3>
+        <div class="subj-grid">
+          ${SUBJECTS.map(s=>`<button class="subj-btn" onclick="pickSubject('${lv}','${s}')">${s}</button>`).join("")}
+        </div>
+      </div>`).join("")}
+    <div style="margin-top:8px;text-align:right">
+      <button class="btn ghost" onclick="STATE.academy=null;render()">⚙ 학원 설정 수정</button>
+    </div>
+  </div>`;
+}
+function pickSubject(lv,s){
+  STATE.level=lv; STATE.subject=s; STATE.view="input";
+  STATE.info={}; STATE.rows=[]; STATE.sections={}; STATE.compare=null;
+  STATE._skipDup=false;
+  render();
+}
+
+// ---------- 3. 리포트 입력 (+섹션1 난이도 비교 + 시험지 업로드) ----------
+async function renderReportInput(){
+  const lv=STATE.level,s=STATE.subject;
+  const dh=DETAIL_HINT[lv][s], uh=UNITS_HINT[lv][s];
+  app.innerHTML=stepbar(2)+`<div class="card">
+    <h2>리포트 입력 — ${lv} ${s}</h2>
+    <p class="sub">시험 정보·난이도 비교를 입력하고 시험지를 업로드하면 분석이 시작됩니다.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div><label>학년</label><input type="text" id="f_grade" placeholder="예: 1학년" value="${esc(STATE.info.grade||'')}" onchange="onKeyFieldChange()"></div>
+      <div><label>세부 과목명</label><input type="text" id="f_subject" placeholder="${dh}" value="${esc(STATE.info.subject||'')}"></div>
+      <div><label>학교명</label><input type="text" id="f_school" placeholder="예: 월암고등학교" value="${esc(STATE.info.school||'')}" onchange="onKeyFieldChange()"></div>
+    </div>
+    <label>단원명 리스트</label>
+    <textarea id="f_units" placeholder="${uh}">${esc(STATE.info.units||'')}</textarea>
+    <label>상세 분석 대표 문항 (2개)</label>
+    <input type="text" id="f_target" placeholder="예: 15번, 서답형5" value="${esc(STATE.info.target||'')}">
+
+    <label style="margin-top:24px">섹션 1 · 주변 학교 시험 난이도 비교 (시중교재 대비)</label>
+    <p class="hint" id="cmpHint">학년·학교명을 입력하면 같은 학년·과목의 과거 비교표(학교 목록·난이도)를 불러오고, 이번 분석 학교를 자동으로 표에 포함합니다.</p>
+    <div id="cmpArea"><p class="hint" style="padding:20px 0">먼저 학년과 학교명을 입력하세요.</p></div>
+
+    <label style="margin-top:24px">시험지 파일 업로드 (PDF / 이미지)</label>
+    <input type="file" id="f_file" accept=".pdf,.png,.jpg,.jpeg" onchange="onFilePick(event)"
+      style="padding:10px;border:1.5px dashed var(--blue-3);border-radius:10px;background:#f8fbff;width:100%">
+    <p class="hint" id="fileInfo">${STATE.fileName?('선택됨: '+esc(STATE.fileName)):'시험지를 업로드하면 Gemini가 문항별 표를 자동 생성합니다.'}</p>
+
+    <div class="btn-row">
+      <button class="btn ghost" onclick="backToSubject()">← 과목 다시 선택</button>
+      <button class="btn primary" onclick="goAnalyze()">시험지 분석 시작 →</button>
+    </div>
+    ${DEMO?`<div class="notice">현재 <b>데모 모드</b>입니다(API_URL 미설정). 파일 없이도 진행됩니다.</div>`:''}
+  </div>`;
+
+  if(STATE.info.grade){ await loadCompareArea(); }
+}
+
+// 학년/과목/학교명 변경 시 비교표 다시 구성
+async function onKeyFieldChange(){
+  STATE.info.grade=$("#f_grade").value.trim();
+  STATE.info.subject=$("#f_subject").value.trim();
+  STATE.info.school=$("#f_school").value.trim();
+  STATE.compare=null; // 새로 불러오도록
+  await loadCompareArea();
+}
+
+async function loadCompareArea(){
+  const grade=$("#f_grade").value.trim();
+  const school=$("#f_school").value.trim();
+  if(!grade){ return; }
+  $("#cmpArea").innerHTML=`<p class="hint" style="padding:14px 0">불러오는 중…</p>`;
+
+  let schools, fromPrev=false;
+  if(STATE.compare){ schools=STATE.compare.schools.map(s=>({name:s.name,checks:s.checks.slice()})); }
+  else {
+    // 학년+과목이 같은 과거 비교표(학교+난이도) 불러오기
+    const meta=await apiGet({action:"lastcompare",sheetId:STATE.sheetId,grade:grade,subject:STATE.subject});
+    const prev=meta.compare;
+    if(prev && prev.schools && prev.schools.length){
+      schools=prev.schools.map(p=>({name:p.name,checks:p.checks.slice()}));
+      fromPrev=true;
+    } else { schools=[]; }
+  }
+  // 이번 분석 학교가 목록에 없으면 맨 아래 자동 추가(체크는 빈 상태)
+  let added=false;
+  if(school && !schools.some(s=>s.name===school)){
+    schools.push({name:school,checks:[false,false,false,false,false,false]}); added=true;
+  }
+  STATE.compare={schools};
+  $("#cmpHint").innerHTML = (fromPrev
+    ? `✓ ${esc(grade)} ${esc(STATE.subject)} 과거 비교표를 불러왔습니다. 난이도 체크는 수정할 수 있습니다.`
+    : `해당 학년·과목의 과거 리포트가 없어 빈 표로 시작합니다.`)
+    + (added?` 이번 분석 학교 <b>${esc(school)}</b>를 맨 아래에 추가했습니다.`:'');
+  $("#cmpArea").innerHTML=compareGridHTML({schools});
+}
+
+const CMP_GRAD=["#dbe7fb","#c9def8","#e9f0c9","#f2f6cf","#dff0a8","#cfe88a"];
+function academyBooks(){
+  return (STATE.academy&&STATE.academy.books)||["하","중하","중","중상","상","최상"];
+}
+function compareGridHTML(cmp){
+  const books=academyBooks();   // 헤더는 학원 설정값(읽기 전용)
+  const me=$("#f_school")?$("#f_school").value.trim():STATE.info.school;
+  return `<table class="cmp-table" id="cmpGrid">
+    <thead><tr><th style="width:170px">주변 학교 시험 난이도<br>(시중교재 난이도)</th>
+      ${books.map((b,i)=>`<th style="background:${CMP_GRAD[i]}">${esc(b)}</th>`).join("")}</tr></thead>
+    <tbody>${cmp.schools.map((sc,r)=>`<tr>
+      <td class="schoolname"><input type="text" value="${esc(sc.name)}" data-r="${r}" data-name
+        ${sc.name===me?'style="background:#eaf2fe;font-weight:800"':''}></td>
+      ${sc.checks.map((ck,c)=>`<td><input type="checkbox" data-r="${r}" data-c="${c}" ${ck?'checked':''}></td>`).join("")}
+    </tr>`).join("")}</tbody></table>
+    <button class="addrow" onclick="addCmpRow()" type="button">+ 학교 추가</button>
+    <p class="rep-note">※ 시험 난이도는 작성자의 주관이 담겨있으므로 절대적인 지표가 아님을 알려드립니다.</p>`;
+}
+function addCmpRow(){
+  const cur=readCompare();
+  cur.schools.push({name:"",checks:[false,false,false,false,false,false]});
+  STATE.compare=cur;
+  $("#cmpArea").innerHTML=compareGridHTML(cur);
+}
+function readCompare(){
+  const rows=document.querySelectorAll('#cmpGrid tbody tr');
+  const schools=Array.from(rows).map(()=>({name:"",checks:[false,false,false,false,false,false]}));
+  document.querySelectorAll('#cmpGrid input[data-name]').forEach(inp=>{schools[+inp.dataset.r].name=inp.value;});
+  document.querySelectorAll('#cmpGrid input[type=checkbox]').forEach(cb=>{schools[+cb.dataset.r].checks[+cb.dataset.c]=cb.checked;});
+  return {schools};
+}
+function backToSubject(){ STATE.subject=null; STATE.view=null; STATE.compare=null; render(); }
+
+// 파일 선택 → base64 보관
+function onFilePick(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  STATE.fileName=f.name; STATE.fileMime=f.type||"application/pdf";
+  const rd=new FileReader();
+  rd.onload=()=>{ STATE.fileBase64=String(rd.result).split(",")[1]; $("#fileInfo").textContent="선택됨: "+f.name; };
+  rd.readAsDataURL(f);
+}
+
+function groupKeyOf(){ return `${STATE.info.school}_${STATE.info.grade}_${STATE.subject}`; }
+
+async function goAnalyze(){
+  STATE.info={
+    school:$("#f_school").value.trim(), grade:$("#f_grade").value.trim(),
+    subject:$("#f_subject").value.trim(), units:$("#f_units").value.trim(),
+    target:$("#f_target").value.trim()
+  };
+  if(!STATE.info.school||!STATE.info.grade){ return toast("학년과 학교명은 필수입니다."); }
+  if($("#cmpGrid")) STATE.compare=readCompare();
+  STATE.groupKey=groupKeyOf();
+
+  if(!DEMO && !STATE.fileBase64){ return toast("시험지 파일을 업로드해 주세요."); }
+
+  // 같은 [학교+학년+과목] 기록이 있으면 선택 화면
+  if(!STATE._skipDup){
+    const lst=await apiGet({action:"list",sheetId:STATE.sheetId,groupKey:STATE.groupKey});
+    if(lst.ok && lst.reports && lst.reports.length){
+      STATE._pendingList=lst.reports; STATE.view="exists"; return render();
+    }
+  }
+  await runAnalyze();
+}
+
+async function runAnalyze(){
+  STATE._skipDup=false;
+  loadingScreen("Gemini가 시험지를 분석하고 있습니다…");
+  const res=await apiPost({action:"analyze", prompt:buildAnalyzePrompt(),
+    fileBase64:STATE.fileBase64, mimeType:STATE.fileMime});
+  if(!res.ok){ toast("분석 오류: "+(res.error||"")); STATE.view="input"; return render(); }
+  try{ STATE.rows=JSON.parse(String(res.raw).replace(/```json|```/g,"").trim()); }
+  catch(e){ toast("분석 결과 파싱 실패"); STATE.view="input"; return render(); }
+  STATE.view="raw"; render();
+}
+function loadingScreen(msg){
+  app.innerHTML=`<div class="card" style="text-align:center;padding:60px">
+    <div class="spinner"></div><p style="color:var(--muted)">${msg}</p></div>`;
+}
+
+// ---------- 3-1. 이미 분석한 기록이 있을 때 선택 화면 ----------
+function renderExists(){
+  app.innerHTML=stepbar(2)+`<div class="card" style="text-align:center;padding:48px 36px">
+    <div style="font-size:40px;margin-bottom:10px">🗂️</div>
+    <h2>이 학교는 이미 분석한 기록이 있습니다</h2>
+    <p class="sub" style="margin-bottom:8px">${esc(STATE.info.school)} · ${esc(STATE.info.grade)} · ${esc(STATE.subject)}
+      <br>기존 기록 ${STATE._pendingList.length}건</p>
+    <div class="btn-row" style="max-width:520px;margin:26px auto 0">
+      <button class="btn ghost" onclick="STATE.view='list';render()">기존 리포트 보기</button>
+      <button class="btn primary" onclick="STATE._skipDup=true;runAnalyze()">새로 분석하기</button>
+    </div>
+    <div style="margin-top:18px"><button class="btn ghost" onclick="STATE.view='input';render()">← 입력으로 돌아가기</button></div>
+  </div>`;
+}
+
+// ---------- 3-2. 그 학교의 리포트 이력 목록 ----------
+function renderHistoryList(){
+  const list=STATE._pendingList||[];
+  app.innerHTML=stepbar(2)+`<div class="card">
+    <h2>기존 리포트 목록</h2>
+    <p class="sub">${esc(STATE.info.school)} · ${esc(STATE.info.grade)} · ${esc(STATE.subject)} — 생성일시를 눌러 해당 리포트를 엽니다.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+      ${list.map(r=>`<button class="btn ghost" style="justify-content:space-between;text-align:left"
+        onclick="openHistory('${r.id}')">
+        <span>📄 ${fmtDate(r.createdAt)} 생성</span><span style="color:var(--blue-ink)">열기 →</span></button>`).join("")}
+    </div>
+    <div class="btn-row" style="margin-top:24px">
+      <button class="btn ghost" onclick="STATE.view='exists';render()">← 뒤로</button>
+      <button class="btn primary" onclick="STATE._skipDup=true;runAnalyze()">새로 분석하기</button>
+    </div>
+  </div>`;
+}
+function fmtDate(iso){
+  try{ const d=new Date(iso); const p=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }catch(e){ return iso; }
+}
+async function openHistory(id){
+  loadingScreen("리포트를 불러오는 중…");
+  const res=await apiGet({action:"get",sheetId:STATE.sheetId,id:id});
+  if(!res.found){ toast("리포트를 찾을 수 없습니다."); STATE.view="list"; return render(); }
+  const r=res.record;
+  STATE.reportId=r.id; STATE.groupKey=r.groupKey;
+  STATE.info={school:r.school,grade:r.grade,subject:r.detail,units:r.units,target:r.target};
+  STATE.rows=r.data.rows||[]; STATE.compare=r.data.compare||{schools:[]};
+  STATE.sections={s2:r.s2,s3:r.s3,s5:r.s5};
+  if(r.data.academy) STATE.academy=r.data.academy;
+  STATE.view="report"; render();
+}
+
+// ---------- 4. 난이도 검토/수정 ----------
+const TYPES=["개념형","계산형","해석·추론형","탐구·실험형","복합형"];
+const DIFFS=["하","중","상"];
+function renderRawEdit(){
+  app.innerHTML=stepbar(3)+`<div class="card">
+    <h2>기초 데이터 검토 및 난이도 입력</h2>
+    <p class="sub">Gemini가 추출한 문항표입니다. 난이도(하/중/상)와 구분을 확인·수정하세요.</p>
+    <table class="data-table" id="editTable">
+      <thead><tr><th style="width:90px">문항번호</th><th style="width:70px">배점</th>
+        <th style="width:130px">구분</th><th style="width:90px">난이도</th><th>출제 단원</th></tr></thead>
+      <tbody>${STATE.rows.map((r,i)=>rowHTML(r,i)).join("")}</tbody>
+    </table>
+    <button class="addrow" onclick="addRow()">+ 문항 추가</button>
+    <div id="scoreCheck" style="margin-top:12px;font-size:13px"></div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="STATE.view='input';render()">← 입력 수정</button>
+      <button class="btn primary" onclick="goReport()">최종 보고서 도출</button>
+    </div>
+  </div>`;
+  updateScoreCheck();
+}
+function rowHTML(r,i){
+  return `<tr data-i="${i}">
+    <td><input type="text" value="${esc(r.no)}" data-k="no"></td>
+    <td><input type="text" value="${esc(r.score)}" data-k="score" oninput="updateScoreCheck()"></td>
+    <td><select data-k="type">${TYPES.map(t=>`<option ${t===r.type?'selected':''}>${t}</option>`).join("")}</select></td>
+    <td><select data-k="diff">${DIFFS.map(d=>`<option ${d===r.diff?'selected':''}>${d}</option>`).join("")}</select></td>
+    <td><input type="text" value="${esc(r.unit)}" data-k="unit"></td></tr>`;
+}
+function addRow(){ readTable(); STATE.rows.push({no:"",score:"",type:"개념형",diff:"하",unit:""}); renderRawEdit(); }
+function readTable(){
+  const rows=[];
+  document.querySelectorAll("#editTable tbody tr").forEach(tr=>{
+    const o={}; tr.querySelectorAll("[data-k]").forEach(el=>o[el.dataset.k]=el.value.trim());
+    if(o.no||o.score) rows.push(o);
+  });
+  STATE.rows=rows;
+}
+function updateScoreCheck(){
+  let tot=0; document.querySelectorAll('#editTable [data-k="score"]').forEach(el=>{const v=parseFloat(el.value);if(!isNaN(v))tot+=v;});
+  tot=Math.round(tot*10)/10;
+  const ok=Math.abs(tot-100)<=0.5;
+  $("#scoreCheck").innerHTML=ok?`<span style="color:#16a34a">✓ 배점 합계 ${tot}점</span>`
+    :`<span style="color:#d97706">⚠ 배점 합계 ${tot}점 (목표 100점)</span>`;
+}
+async function goReport(){
+  readTable();
+  if(!STATE.rows.length) return toast("문항 데이터가 비어 있습니다.");
+  loadingScreen("최종 분석 보고서를 생성하고 있습니다…");
+  // 최종 텍스트
+  const res=await apiPost({action:"sections", prompt:buildSectionsPrompt(),
+    fileBase64:STATE.fileBase64, mimeType:STATE.fileMime});
+  if(!res.ok){ toast("생성 오류: "+(res.error||"")); STATE.view="raw"; return render(); }
+  try{ STATE.sections=JSON.parse(String(res.text).replace(/```json|```/g,"").trim()); }
+  catch(e){ STATE.sections={s2:res.text||"",s3:"",s5:""}; }
+  // 고유 ID 생성(그룹키_시각) — 덮어쓰지 않고 이력 누적
+  STATE.groupKey=groupKeyOf();
+  const ts=new Date(); const p=n=>String(n).padStart(2,'0');
+  STATE.reportId=`${STATE.groupKey}_${ts.getFullYear()}${p(ts.getMonth()+1)}${p(ts.getDate())}_${p(ts.getHours())}${p(ts.getMinutes())}${p(ts.getSeconds())}`;
+  await apiPost({action:"save", sheetId:STATE.sheetId, id:STATE.reportId, groupKey:STATE.groupKey,
+    school:STATE.info.school, grade:STATE.info.grade, subject:STATE.subject,
+    detail:STATE.info.subject, units:STATE.info.units, target:STATE.info.target,
+    data:{rows:STATE.rows, compare:STATE.compare, academy:STATE.academy},
+    s2:STATE.sections.s2, s3:STATE.sections.s3, s5:STATE.sections.s5});
+  STATE.view="report"; render();
+}
+
+// =========================================================
+//  5. 최종 리포트 (페이지 단위, 7페이지 제외)
+// =========================================================
+function renderReport(){
+  const A=STATE.academy, I=STATE.info, T=A.titles;
+  const calc=computeStats(STATE.rows, A.band);
+  app.innerHTML=stepbar(4)+`
+    <div class="report-toolbar">
+      ${STATE.readonly?'':`<button class="btn ghost" onclick="STATE.view='raw';render()">← 데이터 수정</button>`}
+      ${STATE.readonly?'':`<button class="btn ghost" onclick="copyShareLink()">🔗 링크 복사 (보기 전용)</button>`}
+      <button class="btn primary" onclick="window.print()">⬇ PDF 다운로드</button>
+    </div>
+    <div id="report">
+      ${coverPage(A,I)}
+      ${page1(T,I,calc)}
+      ${page3(T)}
+      ${page4(T,calc)}
+      ${page5(T,calc,A.band)}
+      ${backCoverPage(A,I)}
+    </div>`;
+  drawCharts(calc);
+}
+
+function headHTML(I){
+  return `<div class="rep-head">
+    <h1>${esc(I.school)} 시험 분석</h1>
+    <div class="meta">- ${esc(I.grade)} [ ${esc(STATE.subject)} ]</div></div>`;
+}
+function skylineSVG(){
+  return `<svg class="skyline" viewBox="0 0 794 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#bcd6f5"><rect x="20" y="120" width="60" height="80"/><rect x="95" y="90" width="55" height="110"/>
+    <rect x="165" y="140" width="48" height="60"/><rect x="225" y="70" width="62" height="130"/>
+    <rect x="300" y="110" width="50" height="90"/><rect x="365" y="50" width="58" height="150"/>
+    <rect x="438" y="130" width="46" height="70"/><rect x="498" y="95" width="60" height="105"/>
+    <rect x="572" y="135" width="44" height="65"/><rect x="628" y="80" width="56" height="120"/>
+    <rect x="700" y="115" width="50" height="85"/><rect x="762" y="100" width="32" height="100"/></g>
+    <g fill="#fff" opacity=".55"><rect x="108" y="105" width="8" height="8"/><rect x="124" y="105" width="8" height="8"/>
+    <rect x="238" y="88" width="8" height="8"/><rect x="254" y="88" width="8" height="8"/>
+    <rect x="378" y="70" width="8" height="8"/><rect x="394" y="70" width="8" height="8"/>
+    <rect x="641" y="98" width="8" height="8"/><rect x="657" y="98" width="8" height="8"/></g></svg>`;
+}
+function logoPlaceholder(A){
+  // 로고 업로드 시 <img>로 교체. 지금은 자리표시.
+  return `<div class="logo-ph"><div class="mark">LOGO</div>
+    <div style="font-weight:900;font-size:18px">${esc(A.name)}</div></div>`;
+}
+
+function coverPage(A,I){
+  return `<div class="page cover">
+    <div class="cover-card">
+      <span class="cover-tag">시험 분석 리포트</span>
+      <h1>학교별<br>시험 분석<br>리포트</h1>
+      <div class="cover-pill">한눈에 보기 <span class="arr">→</span></div>
+      <div class="cover-desc">각 학교의 시험 경향과 분석 · 난이도 · 문제 형태 및<br>출제 단원 · 총평 · 학습 방향까지 제시하는 리포트!</div>
+    </div>
+    <div class="cover-meta">
+      <span>${esc(I.school)}</span><span>${esc(I.grade)}</span><span>${esc(STATE.subject)}</span>
+    </div>
+    <div class="cover-logo-box">${logoPlaceholder(A)}</div>
+    ${skylineSVG()}
+  </div>`;
+}
+function backCoverPage(A,I){
+  return `<div class="page backcover">
+    <div class="bc-top"><h2>시험 분석 리포트</h2><h1>${esc(I.school)} ${esc(STATE.subject)}</h1></div>
+    <div class="bc-center">${logoPlaceholder(A)}
+      <div class="tel">상담문의 ${esc(A.tel)}</div></div>
+    ${skylineSVG()}
+  </div>`;
+}
+
+// 1페이지: 난이도 비교표 + 총평 머리
+function page1(T,I,calc){
+  const cmp=STATE.compare||{schools:[]};
+  const books=academyBooks();
+  return `<div class="page">${headHTML(I)}
+    <h2 class="sec-title">${esc(T.s1)}</h2>
+    <table class="rep-cmp">
+      <thead><tr><th style="width:200px">주변 학교 시험 난이도<br>(시중교재 난이도)</th>
+        ${books.map(b=>`<th>${esc(b)}</th>`).join("")}</tr></thead>
+      <tbody>${cmp.schools.map((sc,r)=>`<tr>
+        <td class="sn" style="background:${CMP_GRAD[Math.min(r,5)]}55">${esc(sc.name)}</td>
+        ${sc.checks.map((ck,c)=>`<td style="${ck?`background:${CMP_GRAD[c]}`:''}">${ck?'●':''}</td>`).join("")}
+      </tr>`).join("")}</tbody></table>
+    <p class="rep-note">※ 시험 난이도는 작성자의 주관이 담겨있으므로 절대적인 지표가 아님을 알려드립니다.</p>
+    <h2 class="sec-title" style="margin-top:30px">${esc(T.s2)}</h2>
+    <div class="body-text">${esc(STATE.sections.s2)}</div>
+    <div class="page-num">- 1 -</div></div>`;
+}
+// 2페이지(견본에선 총평이 1p에 함께 있으나, 분량 따라 분리) — 여기선 문항 상세를 3섹션 묶음 페이지로
+function page2(T){ return ""; } // 총평을 page1에 합침. 분리 필요시 개발자가 split.
+
+// 문항별 상세 (견본 3페이지)
+function page3(T){
+  return `<div class="page">${headHTML(STATE.info)}
+    <h2 class="sec-title">${esc(T.s3)}</h2>
+    <table class="rep-detail">
+      <thead><tr><th>문항번호</th><th>배점</th><th>구분</th><th>난이도</th><th>출제 단원</th></tr></thead>
+      <tbody>${STATE.rows.map(r=>`<tr><td>${esc(r.no)}</td><td>${esc(r.score)}</td>
+        <td>${esc(r.type)}</td><td>${esc(r.diff)}</td><td>${esc(r.unit)}</td></tr>`).join("")}</tbody>
+    </table>
+    <div class="page-num">- 2 -</div></div>`;
+}
+
+// 유형별 출제현황 + 도넛 2개 (견본 4페이지)
+function page4(T,calc){
+  const c=calc.cross;
+  return `<div class="page">${headHTML(STATE.info)}
+    <h2 class="sec-title">${esc(T.s4)}</h2>
+    <table class="rep-cross">
+      <thead><tr><th>문제 유형 / 난이도</th><th>하</th><th>중</th><th>상</th><th class="tot">총계</th></tr></thead>
+      <tbody>
+        ${calc.typeList.map(ty=>`<tr><td>${esc(ty)}</td>
+          <td>${c[ty].하||0}</td><td>${c[ty].중||0}</td><td>${c[ty].상||0}</td>
+          <td class="tot">${c[ty].총||0}</td></tr>`).join("")}
+        <tr><td>총계</td><td>${calc.diffTot.하}</td><td>${calc.diffTot.중}</td>
+          <td>${calc.diffTot.상}</td><td class="tot">${calc.total}</td></tr>
+      </tbody>
+    </table>
+    <div class="chart-2col">
+      <div class="chart-box"><h4>문제 유형별 출제 비중</h4><div id="donutType"></div></div>
+      <div class="chart-box"><h4>난이도별 출제 비중</h4><div id="donutDiff"></div></div>
+    </div>
+    <div class="body-text">${esc(STATE.sections.s3)}</div>
+    <div class="page-num">- 3 -</div></div>`;
+}
+
+// 출제 단원 + 배점도넛 + 배점구간기준 + 누적막대 2개 (견본 5페이지)
+function page5(T,calc,band){
+  return `<div class="page">${headHTML(STATE.info)}
+    <div class="score-band">
+      <div class="chart-box"><h4>시험 전체 배점 비율</h4><div id="donutBand"></div></div>
+      <div class="band-info">
+        <h4>배점 구간 기준</h4>
+        <div class="li">- 저배점 : ${band.lo}점 이하</div>
+        <div class="li">- 중배점 : ${band.lo}점 초과 ~ ${band.hi}점 미만</div>
+        <div class="li">- 고배점 : ${band.hi}점 이상</div>
+        <p style="margin-top:12px">각 배점 구간은 문제의 난이도와는 별개로, 전체 시험에서 각 문항이 차지하는 점수 배점 비중을 기준으로 구분하였습니다.</p>
+      </div>
+    </div>
+    <h2 class="sec-title" style="margin-top:18px">${esc(T.s5)}</h2>
+    <div class="body-text" style="margin-bottom:18px">${esc(STATE.sections.s5)}</div>
+    <div class="chart-1"><h4>문제 유형별 배점 비율 상세 분석</h4><div id="barScore"></div></div>
+    <div class="chart-1"><h4>문제 유형별 난이도 상세 분석</h4><div id="barDiff"></div></div>
+    <div class="page-num">- 4 -</div></div>`;
+}
+
+// =========================================================
+//  통계 계산 (구글시트 COUNTIFS 역할 — 1-B 데이터에서 자동)
+// =========================================================
+function computeStats(rows, band){
+  const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
+  const total=rows.length;
+  // 유형 교차표
+  const typeList=[...new Set(rows.map(r=>r.type))];
+  const cross={};
+  typeList.forEach(ty=>cross[ty]={하:0,중:0,상:0,총:0});
+  const diffTot={하:0,중:0,상:0};
+  rows.forEach(r=>{ if(!cross[r.type])cross[r.type]={하:0,중:0,상:0,총:0};
+    cross[r.type][r.diff]=(cross[r.type][r.diff]||0)+1; cross[r.type].총++; diffTot[r.diff]=(diffTot[r.diff]||0)+1; });
+  // 유형 비중
+  const typeCount={}; typeList.forEach(ty=>typeCount[ty]=cross[ty].총);
+  // 배점 구간 비중(점수합 기준)
+  const bandSum={저:0,중:0,고:0}; let scoreTotal=0;
+  rows.forEach(r=>{const sc=num(r.score);scoreTotal+=sc;
+    if(sc<=band.lo)bandSum.저+=sc; else if(sc>=band.hi)bandSum.고+=sc; else bandSum.중+=sc;});
+  // 유형별 배점 분포(누적막대): 유형 → {배점값:문항수}
+  const scoreByType={}; const scoreKeys=new Set();
+  typeList.forEach(ty=>scoreByType[ty]={});
+  rows.forEach(r=>{const k=r.score;scoreKeys.add(k);scoreByType[r.type][k]=(scoreByType[r.type][k]||0)+1;});
+  // 유형별 난이도 분포(누적막대)
+  const diffByType={}; typeList.forEach(ty=>diffByType[ty]={하:cross[ty].하,중:cross[ty].중,상:cross[ty].상});
+  return {total,typeList,cross,diffTot,typeCount,bandSum,scoreTotal,
+    scoreByType,scoreKeys:[...scoreKeys].sort((a,b)=>parseFloat(a)-parseFloat(b)),diffByType};
+}
+
+// =========================================================
+//  차트 (시트 색·종류 재현) — 순수 SVG (외부 의존성 없음)
+// =========================================================
+function drawCharts(calc){
+  // ── 도넛 ──
+  const donut=(id,labels,data,colors)=>{
+    const el=document.getElementById(id); if(!el)return;
+    const tot=data.reduce((a,b)=>a+b,0)||1;
+    const cx=90,cy=90,r=70,ir=40; let ang=-Math.PI/2; let paths="";
+    data.forEach((v,i)=>{
+      const frac=v/tot; if(frac<=0)return;
+      const a2=ang+frac*Math.PI*2;
+      const x1=cx+r*Math.cos(ang),y1=cy+r*Math.sin(ang);
+      const x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2);
+      const xi1=cx+ir*Math.cos(a2),yi1=cy+ir*Math.sin(a2);
+      const xi2=cx+ir*Math.cos(ang),yi2=cy+ir*Math.sin(ang);
+      const large=frac>0.5?1:0;
+      paths+=`<path d="M${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi1} ${yi1} A${ir} ${ir} 0 ${large} 0 ${xi2} ${yi2} Z" fill="${colors[i%colors.length]}" stroke="#fff" stroke-width="1.5"/>`;
+      // 비율 라벨
+      const mid=(ang+a2)/2, lr=(r+ir)/2;
+      const lx=cx+lr*Math.cos(mid),ly=cy+lr*Math.sin(mid);
+      if(frac>0.05) paths+=`<text x="${lx}" y="${ly}" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="middle">${(frac*100).toFixed(1)}%</text>`;
+      ang=a2;
+    });
+    const legend=labels.map((l,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:0 7px;font-size:11px">
+      <span style="width:11px;height:11px;border-radius:2px;background:${colors[i%colors.length]};display:inline-block"></span>${esc(l)}</span>`).join("");
+    el.innerHTML=`<svg viewBox="0 0 180 180" width="100%" style="max-height:200px">${paths}</svg>
+      <div style="text-align:center;margin-top:4px">${legend}</div>`;
+  };
+  const blueShades=['#5b8ec9','#9db2d5','#7ea3d0','#b9c8e2','#6f97cc','#aebfdd'];
+  donut('donutType',calc.typeList,calc.typeList.map(t=>calc.typeCount[t]),blueShades);
+  donut('donutDiff',['하','중','상'],[calc.diffTot.하,calc.diffTot.중,calc.diffTot.상],
+    ['#e1d8eb','#c7badd','#8b7cb8']);
+  donut('donutBand',['저배점','중배점','고배점'],[calc.bandSum.저,calc.bandSum.중,calc.bandSum.고],
+    ['#dcefda','#a9cfa6','#7cb083']);
+
+  // ── 누적 가로막대 ──
+  const scoreColorMap={'3.7':'#4285F4','3.8':'#EA4335','3.9':'#FBBC04','4':'#34A853',
+    '4.1':'#FF6D00','6':'#46BDC6','7':'#4C8BF5'};
+  const palette=['#4285F4','#EA4335','#FBBC04','#34A853','#FF6D00','#46BDC6','#4C8BF5','#AB47BC'];
+  const stackedBar=(id,types,keys,matrix,colorFn)=>{
+    const el=document.getElementById(id); if(!el)return;
+    const W=760,rowH=46,gap=18,padL=70,padR=20,barW=W-padL-padR;
+    const H=types.length*(rowH+gap)+40;
+    let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+    types.forEach((ty,ti)=>{
+      const y=ti*(rowH+gap)+6;
+      const rowTotal=keys.reduce((a,k)=>a+(matrix[ty][k]||0),0)||1;
+      let x=padL;
+      svg+=`<text x="${padL-10}" y="${y+rowH/2}" font-size="12" font-weight="600" text-anchor="end" dominant-baseline="middle">${esc(ty)}</text>`;
+      keys.forEach((k,ki)=>{
+        const v=matrix[ty][k]||0; if(!v)return;
+        const w=barW*v/rowTotal;
+        svg+=`<rect x="${x}" y="${y}" width="${w}" height="${rowH}" fill="${colorFn(k,ki)}"/>`;
+        if(w>34) svg+=`<text x="${x+w/2}" y="${y+rowH/2}" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="middle">${(v/rowTotal*100).toFixed(1)}%</text>`;
+        x+=w;
+      });
+    });
+    svg+=`</svg>`;
+    const legend=keys.map((k,ki)=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:0 7px;font-size:11px">
+      <span style="width:11px;height:11px;border-radius:2px;background:${colorFn(k,ki)};display:inline-block"></span>${esc(k)}</span>`).join("");
+    el.innerHTML=svg+`<div style="text-align:center;margin-top:8px">${legend}</div>`;
+  };
+  stackedBar('barScore',calc.typeList,calc.scoreKeys,calc.scoreByType,
+    (k,ki)=>scoreColorMap[k]||palette[ki%palette.length]);
+  stackedBar('barDiff',calc.typeList,['하','중','상'],calc.diffByType,
+    (k)=>({'하':'#8b7cb8','중':'#c7badd','상':'#e1d8eb'}[k]));
+}
+
+// ---------- 링크 복사(보기 전용) ----------
+function copyShareLink(){
+  // 보기 전용 URL: 시트ID + 리포트 고유ID + readonly
+  const url=`${location.origin}${location.pathname}?sheet=${encodeURIComponent(STATE.sheetId)}&report=${encodeURIComponent(STATE.reportId)}&view=readonly`;
+  navigator.clipboard?.writeText(url).then(
+    ()=>toast("보기 전용 링크가 복사되었습니다."),
+    ()=>toast(url)
+  );
+}
+
+// ---------- 시작 ----------
+async function init(){
+  const q=new URLSearchParams(location.search);
+  const sheet=q.get("sheet"), reportId=q.get("report"), view=q.get("view");
+  if(sheet && reportId && view==="readonly"){
+    // 보기 전용 링크: 검증 없이 해당 리포트만 렌더
+    STATE.sheetId=sheet; STATE.readonly=true;
+    const res=await apiGet({action:"report",sheetId:sheet,id:reportId});
+    if(res.ok && res.record){
+      const r=res.record;
+      STATE.reportId=r.id;
+      STATE.access=true; STATE.academy=r.data.academy||loadAcademy()||{name:"",tel:"",titles:defaultTitles(),band:{lo:4,hi:6.1},books:["하","중하","중","중상","상","최상"]};
+      STATE.subject=r.subject; STATE.level=(r.grade||"").includes("중")?"중등":"고등";
+      STATE.info={school:r.school,grade:r.grade,subject:r.detail,units:r.units,target:r.target};
+      STATE.rows=r.data.rows||[]; STATE.compare=r.data.compare||{schools:[]};
+      STATE.sections={s2:r.s2,s3:r.s3,s5:r.s5};
+      STATE.view="report"; return render();
+    }
+    toast("리포트를 찾을 수 없습니다.");
+  }
+  render();
+}
+function defaultTitles(){return {s1:"1. 학교 시험 난이도 비교 분석",s2:"2. 총평 및 학습전략",
+  s3:"3. 문항별 상세 분석",s4:"4. 문제 유형별 출제 현황 분석",s5:"5. 출제 단원 분석"};}
+init();
+</script>
+</body>
+</html>
