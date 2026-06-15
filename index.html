@@ -298,7 +298,7 @@ const SUBJECTS = ["국어","수학","영어","과학"];
 const $=s=>document.querySelector(s);
 const app=$("#app");
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
-function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 function loadAcademy(){ return JSON.parse(localStorage.getItem("isyou_academy_"+STATE.sheetId)||"null"); }
 function saveAcademy(a){ localStorage.setItem("isyou_academy_"+STATE.sheetId, JSON.stringify(a)); }
@@ -747,16 +747,69 @@ async function goAnalyze(){
 async function runAnalyze(){
   STATE._skipDup=false;
   loadingScreen("Gemini가 시험지를 분석하고 있습니다…");
-  const res=await apiPost({action:"analyze", prompt:buildAnalyzePrompt(),
-    fileBase64:STATE.fileBase64, mimeType:STATE.fileMime});
-  if(!res.ok){ toast("분석 오류: "+(res.error||"")); STATE.view="input"; return render(); }
-  try{ STATE.rows=JSON.parse(String(res.raw).replace(/```json|```/g,"").trim()); }
-  catch(e){ toast("분석 결과 파싱 실패"); STATE.view="input"; return render(); }
+  let res;
+  try{
+    res=await withTimeout(apiPost({action:"analyze", prompt:buildAnalyzePrompt(),
+      fileBase64:STATE.fileBase64, mimeType:STATE.fileMime}), 120000);
+  }catch(e){
+    return failScreen(
+      e.message==="timeout" ? "분석이 지연되고 있습니다 (2분 초과)" : "분석 요청에 실패했습니다",
+      ()=>runAnalyze());
+  }
+  stopLoadTimer();
+  if(!res || !res.ok){ return failScreen("분석 오류"+(res&&res.error?": "+res.error:""), ()=>runAnalyze()); }
+  try{
+    STATE.rows=JSON.parse(String(res.raw).replace(/```json|```/g,"").trim());
+    // 모든 값을 문자열로 정규화(Gemini가 score를 숫자로 줘도 안전하게)
+    STATE.rows=(Array.isArray(STATE.rows)?STATE.rows:[]).map(r=>({
+      no:String(r.no==null?"":r.no),
+      score:String(r.score==null?"":r.score),
+      type:String(r.type==null?"":r.type),
+      diff:String(r.diff==null?"":r.diff),
+      unit:String(r.unit==null?"":r.unit)
+    }));
+  }
+  catch(e){ return failScreen("분석 결과를 읽지 못했습니다", ()=>runAnalyze()); }
   STATE.view="raw"; render();
 }
+let _loadTimer=null;
 function loadingScreen(msg){
   app.innerHTML=`<div class="card" style="text-align:center;padding:60px">
-    <div class="spinner"></div><p style="color:var(--muted)">${msg}</p></div>`;
+    <div class="spinner"></div>
+    <p style="color:var(--muted)">${msg}</p>
+    <p id="loadElapsed" style="color:#9ca3af;font-size:13px;margin-top:8px">경과 0초</p>
+    <p style="color:#cbd5e1;font-size:12px;margin-top:4px">※ 시험지가 길면 1~2분 걸릴 수 있어요. 숫자가 멈추지 않으면 진행 중입니다.</p>
+  </div>`;
+  // 경과 시간 카운터 (진행 중임을 눈으로 확인)
+  if(_loadTimer) clearInterval(_loadTimer);
+  const t0=Date.now();
+  _loadTimer=setInterval(()=>{
+    const el=document.getElementById("loadElapsed");
+    if(!el){ clearInterval(_loadTimer); _loadTimer=null; return; }
+    el.textContent="경과 "+Math.floor((Date.now()-t0)/1000)+"초";
+  },1000);
+}
+function stopLoadTimer(){ if(_loadTimer){ clearInterval(_loadTimer); _loadTimer=null; } }
+// 타임아웃 래퍼: ms 안에 응답 없으면 거부
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), ms))
+  ]);
+}
+// 분석 지연/실패 시 빠져나오는 화면
+function failScreen(msg, retryFn){
+  stopLoadTimer();
+  app.innerHTML=`<div class="card" style="text-align:center;padding:48px 36px">
+    <div style="font-size:40px;margin-bottom:10px">⚠️</div>
+    <h2>${esc(msg)}</h2>
+    <p class="sub" style="margin:10px 0 0">네트워크 상태를 확인한 뒤 다시 시도해 주세요.</p>
+    <div class="btn-row" style="max-width:420px;margin:24px auto 0">
+      <button class="btn ghost" onclick="STATE.view='input';render()">← 입력으로</button>
+      <button class="btn primary" id="retryBtn">다시 시도</button>
+    </div>
+  </div>`;
+  document.getElementById("retryBtn").onclick=retryFn;
 }
 
 // ---------- 3-1. 기존 기록 선택 ----------
@@ -868,9 +921,17 @@ async function goReport(){
   readTable();
   if(!STATE.rows.length) return toast("문항 데이터가 비어 있습니다.");
   loadingScreen("최종 분석 보고서를 생성하고 있습니다…");
-  const res=await apiPost({action:"sections", prompt:buildSectionsPrompt(),
-    fileBase64:STATE.fileBase64, mimeType:STATE.fileMime});
-  if(!res.ok){ toast("생성 오류: "+(res.error||"")); STATE.view="raw"; return render(); }
+  let res;
+  try{
+    res=await withTimeout(apiPost({action:"sections", prompt:buildSectionsPrompt(),
+      fileBase64:STATE.fileBase64, mimeType:STATE.fileMime}), 120000);
+  }catch(e){
+    return failScreen(
+      e.message==="timeout" ? "보고서 생성이 지연되고 있습니다 (2분 초과)" : "보고서 생성에 실패했습니다",
+      ()=>goReport());
+  }
+  stopLoadTimer();
+  if(!res || !res.ok){ STATE.view="raw"; return failScreen("생성 오류"+(res&&res.error?": "+res.error:""), ()=>goReport()); }
   try{ STATE.sections=JSON.parse(String(res.text).replace(/```json|```/g,"").trim()); }
   catch(e){ STATE.sections={s2:res.text||"",s3:"",s5:""}; }
   STATE.groupKey=groupKeyOf();
