@@ -557,6 +557,10 @@ async function renderReportInput(){
       <button class="btn ghost" onclick="backToSubject()">← 과목 다시 선택</button>
       <button class="btn primary" onclick="goAnalyze()">시험지 분석 시작 →</button>
     </div>
+    ${(STATE.rows && STATE.rows.length) ? `<div style="margin-top:10px">
+      <button class="btn ghost lg" onclick="goRawWithoutAnalyze()">↩ 다시 분석하지 않고 난이도 검토로 돌아가기</button>
+      <p class="hint" style="text-align:center;margin-top:6px">이미 분석된 문항 ${STATE.rows.length}개가 있습니다. 시험지를 다시 분석하지 않고 검토 화면으로 이동합니다.</p>
+    </div>` : ''}
     ${DEMO?`<div class="notice">현재 <b>데모 모드</b>입니다(API_URL 미설정). 파일 없이도 진행됩니다.</div>`:''}
   </div>`;
 
@@ -742,6 +746,20 @@ async function goAnalyze(){
     }
   }
   await runAnalyze();
+}
+
+// ★ 시험지 재분석 없이, 바뀐 입력값만 반영하고 기존 rows로 검토 화면 복귀
+function goRawWithoutAnalyze(){
+  if(!STATE.rows || !STATE.rows.length){ return toast("아직 분석된 문항이 없습니다. 먼저 시험지 분석을 해주세요."); }
+  // 입력칸이 화면에 있으면 변경사항을 STATE.info에 반영(없으면 기존값 유지)
+  if($("#f_school")) STATE.info.school=$("#f_school").value.trim();
+  if($("#f_grade"))  STATE.info.grade=$("#f_grade").value;
+  if($("#f_subject"))STATE.info.subject=$("#f_subject").value;
+  if(STATE.unitsSel && STATE.unitsSel.length) STATE.info.units=STATE.unitsSel.slice();
+  if($("#f_target")) STATE.info.target=$("#f_target").value.trim();
+  if($("#cmpGrid"))  STATE.compare=readCompare();
+  STATE.groupKey=groupKeyOf();
+  STATE.view="raw"; render();
 }
 
 async function runAnalyze(){
